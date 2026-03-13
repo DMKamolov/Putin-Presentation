@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Operative's Education</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Georgia, 'Times New Roman', serif; background: #0a0a0a; color: #e8e4dc; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0; overflow: hidden; height: 100vh; }
+
+  .deck { width: 100%; max-width: 900px; height: 100vh; display: flex; flex-direction: column; position: relative; }
+
+  .slide { display: none; flex-direction: column; height: 100%; padding: 48px 56px 32px; position: relative; overflow: hidden; }
+  .slide.active { display: flex; }
+
+  .slide-number { font-family: 'Courier New', monospace; font-size: 11px; color: #555; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 32px; }
+
+  h1.title { font-size: 42px; font-weight: 400; line-height: 1.15; color: #e8e4dc; margin-bottom: 16px; }
+  h1.title em { font-style: italic; color: #a89880; }
+  .subtitle { font-size: 16px; color: #888; font-style: italic; margin-bottom: 0; }
+
+  h2.slide-title { font-size: 13px; font-weight: 400; letter-spacing: 0.2em; text-transform: uppercase; color: #a89880; margin-bottom: 28px; border-bottom: 1px solid #222; padding-bottom: 14px; }
+
+  .content { flex: 1; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #333 transparent; }
+  .content::-webkit-scrollbar { width: 3px; }
+  .content::-webkit-scrollbar-thumb { background: #333; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+  .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; }
+  .four-cell { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+  .col-label { font-family: 'Courier New', monospace; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: #666; margin-bottom: 12px; }
+
+  p { font-size: 14px; line-height: 1.75; color: #bbb; margin-bottom: 10px; }
+  p:last-child { margin-bottom: 0; }
+
+  ul { list-style: none; padding: 0; }
+  ul li { font-size: 13.5px; line-height: 1.65; color: #bbb; padding: 4px 0 4px 16px; position: relative; }
+  ul li::before { content: '—'; position: absolute; left: 0; color: #555; }
+
+  .cell { background: #111; border: 1px solid #1e1e1e; border-radius: 4px; padding: 18px 20px; }
+  .cell-title { font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: #a89880; margin-bottom: 12px; font-family: 'Courier New', monospace; }
+
+  blockquote { border-left: 2px solid #a89880; padding-left: 18px; margin: 16px 0; font-style: italic; font-size: 14px; color: #999; line-height: 1.7; }
+
+  .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .data-table th { text-align: left; font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: #666; font-family: 'Courier New', monospace; font-weight: 400; padding: 6px 12px 6px 0; border-bottom: 1px solid #1e1e1e; }
+  .data-table td { padding: 7px 12px 7px 0; color: #bbb; font-size: 13px; border-bottom: 1px solid #111; vertical-align: top; }
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table .val { color: #e8e4dc; font-family: 'Courier New', monospace; }
+  .data-table .hi { color: #c9a96e; font-family: 'Courier New', monospace; font-weight: 500; }
+
+  .timeline { display: flex; flex-direction: column; gap: 0; }
+  .tl-item { display: flex; gap: 20px; position: relative; padding-bottom: 20px; }
+  .tl-item:last-child { padding-bottom: 0; }
+  .tl-left { display: flex; flex-direction: column; align-items: center; min-width: 72px; }
+  .tl-year { font-family: 'Courier New', monospace; font-size: 12px; color: #a89880; white-space: nowrap; }
+  .tl-line { flex: 1; width: 1px; background: #222; margin-top: 4px; }
+  .tl-item:last-child .tl-line { display: none; }
+  .tl-dot { width: 6px; height: 6px; border-radius: 50%; background: #a89880; position: absolute; left: 67px; top: 4px; }
+  .tl-content { flex: 1; }
+  .tl-content p { margin: 0; font-size: 13px; color: #bbb; line-height: 1.6; }
+  .tl-content strong { color: #e8e4dc; font-weight: 400; }
+
+  .node-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .node { border: 1px solid #1e1e1e; border-radius: 4px; padding: 16px 18px; background: #111; }
+  .node-title { font-family: 'Courier New', monospace; font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: #a89880; margin-bottom: 8px; }
+
+  .pull-quote { font-size: 22px; line-height: 1.5; color: #e8e4dc; font-style: italic; text-align: center; max-width: 680px; margin: auto; padding: 40px 0; }
+  .pull-quote cite { display: block; font-size: 12px; color: #666; font-style: normal; letter-spacing: 0.15em; text-transform: uppercase; margin-top: 20px; font-family: 'Courier New', monospace; }
+
+  .conclusion-item { margin-bottom: 32px; border-left: 1px solid #333; padding-left: 24px; }
+  .conclusion-num { font-family: 'Courier New', monospace; font-size: 10px; color: #666; letter-spacing: 0.15em; margin-bottom: 8px; }
+  .conclusion-stmt { font-size: 18px; color: #e8e4dc; line-height: 1.4; margin-bottom: 8px; font-style: italic; }
+  .conclusion-body { font-size: 13px; color: #888; line-height: 1.65; }
+
+  .tag { display: inline-block; font-family: 'Courier New', monospace; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; padding: 3px 8px; border: 1px solid #333; border-radius: 2px; color: #888; margin-right: 6px; }
+  .tag.hi { border-color: #a89880; color: #a89880; }
+
+  .nav { display: flex; align-items: center; justify-content: space-between; padding: 16px 56px 20px; border-top: 1px solid #161616; }
+  .nav-btn { background: none; border: 1px solid #222; color: #666; font-family: 'Courier New', monospace; font-size: 11px; letter-spacing: 0.12em; padding: 7px 18px; cursor: pointer; border-radius: 2px; transition: all 0.15s; }
+  .nav-btn:hover { border-color: #444; color: #aaa; }
+  .nav-btn:disabled { opacity: 0.2; cursor: default; }
+  .nav-progress { font-family: 'Courier New', monospace; font-size: 11px; color: #444; }
+  .nav-dots { display: flex; gap: 5px; }
+  .nav-dot { width: 4px; height: 4px; border-radius: 50%; background: #333; cursor: pointer; transition: background 0.15s; }
+  .nav-dot.active { background: #a89880; }
+
+  .accent { color: #a89880; }
+  .muted { color: #666; }
+
+  .section-rule { border: none; border-top: 1px solid #1e1e1e; margin: 16px 0; }
+
+  .policy-col { background: #0d0d0d; border: 1px solid #1a1a1a; border-radius: 4px; padding: 18px 20px; }
+  .policy-col-title { font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: #a89880; font-family: 'Courier New', monospace; margin-bottom: 12px; }
+
+  .econ-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+</style>
+</head>
+<body>
+<div class="deck">
+
+  <div class="slide active" id="s1">
+    <div class="slide-number">The Operative's Education</div>
+    <div style="flex:1; display:flex; flex-direction:column; justify-content:center;">
+      <div style="font-family:'Courier New',monospace; font-size:11px; letter-spacing:0.2em; color:#555; text-transform:uppercase; margin-bottom:32px;">A political profile</div>
+      <h1 class="title">How Vladimir Putin<br>Was <em>Made</em></h1>
+      <div style="width:48px; height:1px; background:#a89880; margin:28px 0;"></div>
+      <p class="subtitle">From Leningrad to the Kremlin — power, paranoia, and pragmatism</p>
+      <p style="margin-top:40px; font-size:12px; color:#444; font-family:'Courier New',monospace; letter-spacing:0.1em;">The 2022 invasion was not a sudden pivot. It was the final unmasking of a narrative consistent since 1999. The world had all the data. It lacked the imagination to believe it.</p>
+    </div>
+  </div>
+
+  <div class="slide" id="s2">
+    <div class="slide-number">01 — The argument</div>
+    <h2 class="slide-title">Caricature vs. reality</h2>
+    <div class="content">
+      <div class="two-col" style="margin-bottom:28px;">
+        <div>
+          <div class="col-label">The caricature</div>
+          <ul>
+            <li>Cold War relic; fossilized KGB operative</li>
+            <li>Reflexive, monochromatic anti-Americanism</li>
+            <li>Irrational aggressor driven by Soviet nostalgia</li>
+          </ul>
+        </div>
+        <div>
+          <div class="col-label">The reality</div>
+          <ul>
+            <li>Pragmatist forged by specific historical shocks</li>
+            <li>"American Education" built from survivalist trauma and cynical observation of Western power</li>
+            <li>A worldview meticulously assembled — not inherited</li>
+          </ul>
+        </div>
+      </div>
+      <blockquote>"To view Putin as merely a vengeful ghost of the USSR is to miss the far more instructive reality."</blockquote>
+      <hr class="section-rule">
+      <p style="font-size:13px; color:#888; margin-top:16px;">He tried cooperation. He was the West's fixer in St. Petersburg. He signed the joint venture documents for Procter &amp; Gamble. What he became was the product of specific lessons, learned in sequence, over three decades. This deck traces that sequence.</p>
+    </div>
+  </div>
+
+  <div class="slide" id="s3">
+    <div class="slide-number">02 — Formative foundations, 1952–1991</div>
+    <h2 class="slide-title">Four permanent scars</h2>
+    <div class="content">
+      <div class="four-cell">
+        <div class="cell">
+          <div class="cell-title">Leningrad upbringing</div>
+          <ul>
+            <li>Born 1952, communal apartment, working-class family; 872-day Nazi siege as cultural memory — scarcity, loss, survival</li>
+            <li>Judo/sambo master: "respect for your elders and your opponent" — sport as survival philosophy</li>
+            <li>"Semidesyatnik" generation: stability and state identification over ideological reform</li>
+            <li>Law degree at LGU — fourth Russian leader with legal training; broke from family tradition entirely</li>
+          </ul>
+        </div>
+        <div class="cell">
+          <div class="cell-title">KGB socialization</div>
+          <ul>
+            <li>Joined motivated by romanticized spy thrillers, not ideology — "a prestigious way to defend the motherland"</li>
+            <li>Posted to Dresden 1985–1990 — periphery, not elite Moscow track</li>
+            <li>Dresden: <em>Tal der Ahnungslosen</em> ("Valley of the Clueless") — no Western media, no glasnost</li>
+            <li>Missed the "spiritual revolution" of the late 1980s — a permanent missing link in his cultural DNA</li>
+          </ul>
+        </div>
+        <div class="cell">
+          <div class="cell-title">The 1983 war scare</div>
+          <ul>
+            <li>Reagan era: the "Andropov levy" of KGB officers genuinely believed the U.S. was preparing a nuclear first strike</li>
+            <li>KGB given a specific catalogue of political and military indicators — the U.S. as "clear and present danger"</li>
+            <li>"Fear based on a false threat" — Reagan's hot mic joke or Pershing II deployment could trigger real catastrophe</li>
+            <li>Baseline set permanently: the U.S. is dangerous and unpredictable regardless of who is in the White House</li>
+          </ul>
+        </div>
+        <div class="cell">
+          <div class="cell-title">Dresden & the silence of Moscow</div>
+          <ul>
+            <li>December 5, 1989: protesters surround the KGB building in Dresden after the Berlin Wall falls</li>
+            <li>Putin requests military backup; Moscow responds with silence — "paralysis of power"</li>
+            <li>Lifeless state forms cannot endure; the hasty Soviet exit was an abandonment of interests</li>
+            <li>Core lesson: public discontent must be suppressed before it can threaten state integrity. Hesitation is fatal.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide" id="s4">
+    <div class="slide-number">03 — The 1990s</div>
+    <h2 class="slide-title">Pragmatism, trauma, and the education begins</h2>
+    <div class="content">
+      <div class="three-col">
+        <div>
+          <div class="col-label">The pro-business fixer</div>
+          <ul>
+            <li>Loyal "right arm" to democratic mayor Anatoly Sobchak; oversaw foreign economic relations and law enforcement</li>
+            <li>Helped U.S. firms (Procter &amp; Gamble) navigate post-Soviet conditions — signed their joint venture documents personally</li>
+            <li>Described as "pro-business" and "very helpful" — approached every issue in a "very legal, legalistic way"</li>
+            <li>But spent consulate receptions speaking German with the German consul — never engaging with Americans directly; always the outsider, watching</li>
+            <li>Revered Henry Kissinger as the "German in the White House" — a fellow "History Man" who understood geopolitics as long-term struggle, not news cycles</li>
+          </ul>
+        </div>
+        <div>
+          <div class="col-label">The potato principle</div>
+          <ul>
+            <li>1991: authorized private companies to trade natural resources for food — middlemen failed, St. Petersburg nearly starved</li>
+            <li>"Bailed out" by Viktor Zubkov; core lesson: private companies are untrustworthy, strategic autonomy requires state control</li>
+            <li>Transformed from passive survivor to active survivalist</li>
+            <li>Policy translation: obsession with Rosrezerv (Strategic Reserves) — a "state within a state" rooted in Stalin's 1930s decrees</li>
+            <li>Russia's gold/foreign exchange hoarding = the Potato Principle scaled to national level</li>
+          </ul>
+          <blockquote style="margin-top:12px;">"My own parents labored away from morning till night and made me do the same. I know very well what it's all about."</blockquote>
+        </div>
+        <div>
+          <div class="col-label">The outsider & the catastrophe</div>
+          <ul>
+            <li>Never a "golden boy" — Dresden posting while the KGB elite were in Moscow; Ozero dacha fraternity distrustful of Moscow bureaucracy</li>
+            <li>"Putin was the man who could vanish in a crowd of two."</li>
+            <li>1991 Soviet collapse — "the greatest geopolitical catastrophe of the 20th century"</li>
+          </ul>
+          <table class="data-table" style="margin-top:10px;">
+            <tr><th>Metric</th><th>Loss</th></tr>
+            <tr><td>Territory</td><td class="val">−23.8%</td></tr>
+            <tr><td>Population</td><td class="val">−48.5%</td></tr>
+            <tr><td>GDP</td><td class="val">−41.0%</td></tr>
+            <tr><td>Industrial potential</td><td class="val">−39.4%</td></tr>
+          </table>
+          <p style="margin-top:10px; font-size:12px; color:#666;">Tens of millions of ethnic Russians left outside new borders. "Ontological insecurity" — the absence of strategic frontiers.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide" id="s5">
+    <div class="slide-number">04 — Rise to power, 1996–2000</div>
+    <h2 class="slide-title">Operation Successor</h2>
+    <div class="content">
+      <div class="two-col">
+        <div>
+          <div class="col-label">The ascent</div>
+          <div class="timeline">
+            <div class="tl-item">
+              <div class="tl-left"><span class="tl-year">1996</span><div class="tl-line"></div></div>
+              <div class="tl-dot"></div>
+              <div class="tl-content"><p>Deputy to Pavel Borodin, Presidential Property Management</p></div>
+            </div>
+            <div class="tl-item">
+              <div class="tl-left"><span class="tl-year">1997</span><div class="tl-line"></div></div>
+              <div class="tl-dot"></div>
+              <div class="tl-content"><p>Head of Main Control Directorate; auditing state agencies</p></div>
+            </div>
+            <div class="tl-item">
+              <div class="tl-left"><span class="tl-year">1998</span><div class="tl-line"></div></div>
+              <div class="tl-dot"></div>
+              <div class="tl-content"><p>First Deputy Chief of Staff; appointed Head of FSB</p></div>
+            </div>
+            <div class="tl-item">
+              <div class="tl-left"><span class="tl-year">Aug 1999</span><div class="tl-line"></div></div>
+              <div class="tl-dot"></div>
+              <div class="tl-content"><p>Appointed Prime Minister</p></div>
+            </div>
+            <div class="tl-item">
+              <div class="tl-left"><span class="tl-year">Dec 1999</span><div class="tl-line"></div></div>
+              <div class="tl-dot"></div>
+              <div class="tl-content"><p>Yeltsin resigns; Putin becomes Acting President. First act: signs Yeltsin's immunity decree from criminal prosecution</p></div>
+            </div>
+            <div class="tl-item">
+              <div class="tl-left"><span class="tl-year">Mar 2000</span></div>
+              <div class="tl-dot"></div>
+              <div class="tl-content"><p><strong>Elected President: 52.94%</strong><br><span style="color:#666; font-size:12px;">Zyuganov 29.21% / Yavlinsky 5.80%</span></p></div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="col-label" style="margin-bottom:12px;">Conflict as credential</div>
+          <ul style="margin-bottom:20px;">
+            <li>August 1999: Chechen insurgents invade Dagestan; apartment bombings in Moscow create climate of fear</li>
+            <li>"We will wipe out the terrorists wherever we find them. If we find them in the toilet, that's where we'll do it."</li>
+            <li>"Iron Chancellor" image; "president of hope" — framed as war against terrorism, anticipating post-9/11 alignments</li>
+            <li>Unity (Edinstvo) bloc created to marginalize Luzhkov/Primakov's OVR opposition</li>
+          </ul>
+          <div class="col-label" style="margin-bottom:12px;">The transaction</div>
+          <ul>
+            <li>Ran a deliberate "non-campaign" — refused to debate or publish a platform: "a dishonest business"</li>
+            <li>Media access heavily asymmetrical; democratic veneer thin enough to see through</li>
+            <li>Spin doctors like Gleb Pavlovsky crafted the image — judo master, bare-chested horseman — for a traumatized public and a credulous West</li>
+          </ul>
+          <blockquote style="margin-top:14px;">"[Putin is] fully capable of building a prosperous, strong Russia, while preserving freedom and pluralism." — Bill Clinton, 2000</blockquote>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide" id="s6">
+    <div class="slide-number">05 — Regime construction, 1999–2004</div>
+    <h2 class="slide-title">Building managed democracy & the power vertical</h2>
+    <div class="content">
+      <div class="two-col">
+        <div>
+          <div class="col-label">The power vertical</div>
+          <ul>
+            <li>December 1999 "Millennium Message": defined himself as <em>gosudarstvennik</em> (statist) — strong state as "guarantor of order," initiator of all change</li>
+            <li>Synthesized with Surkov: <em>splav</em> (amalgam) of patriotism, collectivism, solidarity — <em>derzhavnost</em>: Russia destined to be a great power</li>
+            <li>1997 dissertation: "Strategic Planning of Regional Resources" — state must manage natural resource development regardless of ownership</li>
+            <li>Re-centralized FSB/security, brought independent TV (NTV, 2001) under state control, replaced elected regional governors with Kremlin appointees</li>
+            <li>"Modernization without modernity": technical and economic benefits of the West without its pluralism or political diversity</li>
+          </ul>
+        </div>
+        <div>
+          <div class="col-label">The social contract (2000–2007)</div>
+          <ul>
+            <li>Rising consumption in exchange for political passivity — foreign policy cooperative on counter-terrorism and energy</li>
+            <li>GDP growth masked authoritarian consolidation — the trade felt like a good deal</li>
+            <li>2000–2007: legitimacy derived from economic growth and stability</li>
+          </ul>
+          <hr class="section-rule" style="margin:16px 0;">
+          <div class="col-label">Post-2012 pivot</div>
+          <ul>
+            <li>Following domestic protests and the 2008 financial crisis: legitimacy now rests on defending Russian identity against Western "immoral" values</li>
+            <li>From statist pro-Western interregnum to "Putinism" — illiberal, conservative nationalism; explicitly ethnic framing since 2014: "primordial Russian land," Russian ethnic group divided by Soviet collapse</li>
+            <li>Foreign conflict replaces the exhausted social contract — conflict as "circus" replacing the lack of "bread"</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide" id="s7">
+    <div class="slide-number">06 — The architecture of Putinism</div>
+    <h2 class="slide-title">What he actually believes</h2>
+    <div class="content">
+      <div class="three-col">
+        <div>
+          <div class="col-label">Operational code (VICS)</div>
+          <table class="data-table" style="margin-bottom:14px;">
+            <tr><th>Index</th><th>Putin</th><th>Mainstream</th></tr>
+            <tr><td>P-1: Nature of universe</td><td class="val">.48</td><td class="muted">.48</td></tr>
+            <tr><td>P-4: Locus of control</td><td class="hi">.34</td><td class="muted">.26</td></tr>
+            <tr><td>I-1: Strategic approach</td><td class="val">.66</td><td class="muted">.60</td></tr>
+            <tr><td>I-3: Risk orientation</td><td class="hi">.34</td><td class="muted">.19</td></tr>
+          </table>
+          <ul>
+            <li>Aggregate: speaks like a mainstream leader, not a rogue</li>
+            <li>P-4 and I-3 are the distinguishing scores — he perceives maximum personal control over events and maximum risk tolerance</li>
+            <li>Exception: on terrorism/Chechnya, scores plummet into extreme hostility — the streetfighter emerges when order is threatened</li>
+            <li>"You must hit first, and hit so hard that your opponent will not rise to his feet."</li>
+          </ul>
+        </div>
+        <div>
+          <div class="col-label">Tactician, not chess master</div>
+          <ul>
+            <li>Operates as a judo master: size up opponents, probe for weakness, use their weight against them</li>
+            <li>Hostility toward NATO only spiked after 2014 — prior scores indistinguishable from major power norms</li>
+            <li>NATO accounts for only 2.8% of his foreign policy verbal output (China: 4.3%)</li>
+            <li>Ukraine 2014: opportunistic response to chaos following Yanukovych ouster — not pre-planned</li>
+            <li>Pavlovsky: Putin prefers to "go with the grain" of a trend to achieve his ends</li>
+            <li>Behavior is dependent on his perception of the immediate balance of power — not execution of a grand design</li>
+          </ul>
+        </div>
+        <div>
+          <div class="col-label">Intellectual anchors</div>
+          <ul>
+            <li><strong style="color:#e8e4dc; font-weight:400;">Ivan Ilyin:</strong> national dictatorship + spiritual renewal; <em>vozhd</em> whom people must "unconditionally love" → sovereign democracy; Russia's path rooted in its own cultural fabric</li>
+            <li><strong style="color:#e8e4dc; font-weight:400;">Nikolai Berdyayev:</strong> traditionalist defense of "family values" against Western multiculturalism</li>
+            <li><strong style="color:#e8e4dc; font-weight:400;">Lev Gumilev:</strong> <em>passionarnost'</em> — biological-ethnic drive for civilizational expansion; ethnic Russians outside borders as legitimate state interest</li>
+            <li><strong style="color:#e8e4dc; font-weight:400;">Alexander Dugin:</strong> neo-Eurasianist "continental vs. maritime" civilizations → geopolitical rationale for anti-Western alignment</li>
+            <li><strong style="color:#e8e4dc; font-weight:400;">Russian Orthodox Church:</strong> <em>Russkiy Mir</em> — struggle against "Satanic civilization of the West"; soft power in the Global South</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide" id="s8">
+    <div class="slide-number">07 — Regime architecture</div>
+    <h2 class="slide-title">The iron quadrangle</h2>
+    <div class="content">
+      <div class="two-col">
+        <div class="node-grid">
+          <div class="node">
+            <div class="node-title">I. State power</div>
+            <p style="font-size:13px;">Control over FSB, television/media, and "vertical of power" over regional administrations</p>
+            <p style="font-size:11px; color:#555; margin-top:6px;">Patrushev, Bortnikov, Ivanov</p>
+          </div>
+          <div class="node">
+            <div class="node-title">II. State enterprises</div>
+            <p style="font-size:13px;">Monopolistic entities used as sources of power and rents rather than economic growth</p>
+            <p style="font-size:11px; color:#555; margin-top:6px;">Gazprom (Miller), Rosneft (Sechin), Rostec (Chemezov)</p>
+          </div>
+          <div class="node">
+            <div class="node-title">III. Private cronies</div>
+            <p style="font-size:13px;">Loyalists granted state procurement contracts and assets at basement prices</p>
+            <p style="font-size:11px; color:#555; margin-top:6px;">Timchenko, Rotenberg brothers, Kovalchuk</p>
+          </div>
+          <div class="node" style="border-color:#3a2e1e;">
+            <div class="node-title" style="color:#c9a96e;">IV. Offshore havens ↗</div>
+            <p style="font-size:13px;">Western financial systems (U.S. and UK) where the elite park ill-gotten wealth</p>
+            <p style="font-size:11px; color:#555; margin-top:6px;">Anonymous shell companies, international bank transfers</p>
+          </div>
+        </div>
+        <div>
+          <div class="col-label">Structural logic</div>
+          <ul>
+            <li>Patrimonialism: property rights are conditional — businessmen hold assets as a temporary loan from the state, contingent on political obedience ("loyalty as currency")</li>
+            <li>Kompromat: corruption weaponized to ensure loyalty; agencies moved under direct presidential oversight</li>
+            <li>The siloviki (FSB, GRU, military) dominate over technocrats — "militocracy" in the ascendant</li>
+          </ul>
+          <hr class="section-rule" style="margin:16px 0;">
+          <div class="col-label">The achilles heel</div>
+          <ul>
+            <li>The fourth circle — offshore wealth — is housed in London, New York, Zurich. It is reachable.</li>
+            <li>Prohibit anonymous shell companies; end real estate AML exemptions; subject all monetary flows to standard bank regulation</li>
+            <li>No military action required. Only political will.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide" id="s9">
+    <div class="slide-number">08 — Foreign policy as domestic mobilization</div>
+    <h2 class="slide-title">When bread runs out, serve a circus</h2>
+    <div class="content">
+      <div class="two-col" style="margin-bottom:24px;">
+        <div class="cell">
+          <div class="cell-title">Social contract (2000–2007)</div>
+          <p style="font-size:13px;">Legitimacy from economic growth. Rising consumption in exchange for political passivity. Foreign policy cooperative on counter-terrorism and energy.</p>
+        </div>
+        <div class="cell" style="border-color:#3a2e1e;">
+          <div class="cell-title" style="color:#c9a96e;">Geopolitical contract (post-2012)</div>
+          <p style="font-size:13px;">Following domestic protests and 2008 crisis: legitimacy now rests on defending Russian identity against Western "immoral" values. Foreign conflict replaces the exhausted social contract.</p>
+        </div>
+      </div>
+      <div class="three-col">
+        <div>
+          <div class="col-label">Small victorious wars</div>
+          <ul>
+            <li>Georgia (2008) and Crimea (2014) both produced massive spikes in Putin's domestic approval ratings</li>
+            <li>Conflict as "circus" replacing the lack of "bread" — the state needs a credible external enemy to mobilize the nation</li>
+            <li>The U.S. as primary mobilizing threat: Europe too divided, China too dangerous to antagonize</li>
+          </ul>
+        </div>
+        <div>
+          <div class="col-label">The Gerasimov Doctrine</div>
+          <ul>
+            <li>Non-military means (cyber attacks, disinformation, subversion) have grown to exceed the power of conventional weapons</li>
+            <li>"Hybrid warfare" as a continuation of politics by other means</li>
+            <li>Interventions in Ukraine (2014), Syria (2015), U.S. elections (2016): propping up autocratic allies, violating the sovereignty of liberal foes</li>
+          </ul>
+        </div>
+        <div>
+          <div class="col-label">Ideological pivot</div>
+          <ul>
+            <li>From statist pro-Western interregnum to "Putinism" — illiberal, conservative nationalism</li>
+            <li>Since 2014: explicitly ethnic terms — Crimea as "primordial Russian land"; Ukrainian sovereignty denied</li>
+            <li>Anti-Western theory: U.S. foreign policy as inherently hostile to Russian sovereignty and antithetical to Russian Orthodox values</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide" id="s10">
+    <div class="slide-number">09 — From revisionism to war, 1999–2022</div>
+    <h2 class="slide-title">Five decision points the West misread</h2>
+    <div class="content">
+      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px;">
+        <div class="cell">
+          <div class="cell-title">Kosovo 1999</div>
+          <ul>
+            <li>NATO bombing of Belgrade: proof the U.S. had abandoned international law in favor of the "law of force"</li>
+            <li>"Dash to Pristina" — Russian/NATO standoff at Kosovo airport: national humiliation</li>
+            <li>Core conclusion: the West will only respect Russia when it has the brute force to push back</li>
+          </ul>
+        </div>
+        <div class="cell">
+          <div class="cell-title">Munich 2007 / Georgia 2008</div>
+          <ul>
+            <li>Munich: formal declaration that Russia would no longer accept a subordinate role; NATO expansion as U.S. "monopolistic dominance"</li>
+            <li>Georgia: first physical manifestation — justified by citing the "Kosovo precedent," using the West's own "Responsibility to Protect" language</li>
+            <li>West's response: mild condemnation, rapid normalization → lesson: cost of military adventurism is acceptable</li>
+          </ul>
+        </div>
+        <div class="cell">
+          <div class="cell-title">Libya 2011 / colour revolutions</div>
+          <ul>
+            <li>Gaddafi's public murder: a visceral "sore spot" — Putin disgusted by the footage</li>
+            <li>January 2012 Moscow protests: some banners reference Gaddafi's fate — personal existential threat</li>
+            <li>Colour revolutions viewed as CIA "black operations"; Clinton's support for Moscow demonstrators viewed as direct destabilization attempt</li>
+            <li>Logical consequence: 2016 U.S. election interference as a "defensive counter-strike"</li>
+          </ul>
+        </div>
+        <div class="cell">
+          <div class="cell-title">Crimea 2014</div>
+          <ul>
+            <li>Flagrant violation of international law; by 2018 Russia hosting the World Cup — Putin in the VIP box with Macron and the Croatian president</li>
+            <li>Western forgiveness provided "unjustified confidence" that fueled 2022</li>
+          </ul>
+          <blockquote style="margin-top:10px; font-size:12px;">"If there's Putin, there's Russia. If there's no Putin, there's no Russia." — Volodin, Speaker of Parliament</blockquote>
+        </div>
+        <div class="cell" style="border-color:#3a2e1e; grid-column: 2 / 4;">
+          <div class="cell-title" style="color:#c9a96e;">Ukraine 2022</div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+            <ul>
+              <li><em>Russkiy Mir</em> doctrine: seizing territory framed as restoring historical unity</li>
+              <li>2021 essay: "triune nation" concept — Ukrainian sovereignty explicitly denied; "Historical Russia" a non-negotiable policy component</li>
+            </ul>
+            <ul>
+              <li>Framed as "special military operation" — pragmatic self-defense against Western "imprudence"</li>
+              <li>Russian Orthodox Church: characterized as struggle against "Satanic civilization of the West"</li>
+              <li>The invasion was not a pivot. It was the logical endpoint of a worldview assembled since 1989.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide" id="s11">
+    <div class="slide-number">10 — Russia under wartime Putin, 2023–2026</div>
+    <h2 class="slide-title">Resilience and constraint</h2>
+    <div class="content">
+      <div class="two-col">
+        <div>
+          <div class="col-label">Regime stability scorecard</div>
+          <table class="data-table" style="margin-bottom:16px;">
+            <tr><th>Factor</th><th>Assessment</th><th>Trend</th></tr>
+            <tr><td>Overall stability</td><td class="val">7.3 / 10</td><td style="color:#888; font-size:12px;">Resilient, not fully stable</td></tr>
+            <tr><td>Putin's position</td><td class="val">High</td><td style="color:#888; font-size:12px;">Constant → strengthening</td></tr>
+            <tr><td>Elite cohesion</td><td class="val">High</td><td style="color:#888; font-size:12px;">Constant</td></tr>
+            <tr><td>Public support</td><td class="val">Med-High</td><td style="color:#888; font-size:12px;">Constant → strengthening</td></tr>
+            <tr><td>Economic resilience</td><td class="hi">Slowing</td><td style="color:#888; font-size:12px;">Recession risk 2025</td></tr>
+            <tr><td>Domestic opposition</td><td class="val">Negligible</td><td style="color:#888; font-size:12px;">Strengthening regime</td></tr>
+          </table>
+          <ul>
+            <li>Prospects for palace coup: grimly low — former bodyguards made rich in their own right, fortunes tethered to Putin's survival</li>
+            <li>"Militocracy" successfully fostered a military-industrial elite; expanded welfare for warfighters</li>
+            <li>Russia holds a marginal lead in tactical drone and electronic warfare adaptation</li>
+          </ul>
+        </div>
+        <div>
+          <div class="col-label">Economic constraints</div>
+          <table class="data-table" style="margin-bottom:16px;">
+            <tr><th>Indicator</th><th>2023</th><th>2024</th><th>2025</th><th>2026</th></tr>
+            <tr><td>Real GDP growth</td><td class="val">3.6–4.1%</td><td class="val">3.2–4.1%</td><td class="hi">0.8–1.5%</td><td class="hi">0.8–1.0%</td></tr>
+            <tr><td>Inflation</td><td class="val">5.9%</td><td class="val">7.9–9.5%</td><td class="val">5.9%</td><td class="val">4.0–4.5%</td></tr>
+            <tr><td>Budget deficit (% GDP)</td><td class="val">1.9%</td><td class="val">1.1–1.7%</td><td class="hi">1.7–2.9%</td><td class="hi">2.7%</td></tr>
+          </table>
+          <ul>
+            <li>M2 money supply nearly doubled 2021–2025 (62 → 118 trillion rubles)</li>
+            <li>Interest rates peaked at 21% in 2024; unemployment at record lows of 2.2%</li>
+            <li>Declining oil/gas revenues + supply-side constraints = stagnation by 2025</li>
+            <li>National Wealth Fund depletion; decay of domestic private sector</li>
+            <li>"Wartime Keynesianism" — massive state defense spending fueled a brief boom now exhausting itself</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide" id="s12">
+    <div class="slide-number">11 — Global south & security architecture</div>
+    <h2 class="slide-title">Pivot, dependency, and erosion</h2>
+    <div class="content">
+      <div class="two-col">
+        <div>
+          <div class="col-label">Pivot to the global south</div>
+          <ul>
+            <li>China: over one-third of Russia's trade by 2025 — Russia increasingly a "junior partner," relying on Chinese technology and markets</li>
+            <li>Gas exports to Europe dropped to 150 bcm in 2024; "Power of Siberia 2" pipeline signed 2025 — long-term pricing and duration risks remain</li>
+            <li>BRICS: platform to advocate for UN/IMF/World Bank reform; internal asymmetries favor Chinese economic primacy</li>
+            <li>SCO: Central Asian security structure; promotes "non-interference" but incapable of collective action during regional crises</li>
+            <li>"No limits" partnership with Xi Jinping: union of two leaders who view pro-democracy "colour revolutions" as existential threats orchestrated by Washington</li>
+          </ul>
+          <blockquote style="margin-top:12px;">Strategic irony: in seeking to reassert Russian sovereignty, Putin has created deep economic dependence on Beijing. The "no limits" partnership has very clear limits — and they are set in Beijing.</blockquote>
+        </div>
+        <div>
+          <div class="col-label">Erosion of security architecture</div>
+          <ul style="margin-bottom:16px;">
+            <li>Russia's 2021 demands: return to pre-1997 NATO borders — a formal "sphere of influence" in Eastern Europe</li>
+          </ul>
+          <div class="cell" style="margin-bottom:12px;">
+            <div class="cell-title">Nuclear brinkmanship</div>
+            <p style="font-size:13px;">2024 nuclear doctrine revision expanded use cases for nuclear weapons; nuclear signaling increasingly embedded in responses to Western arms supply to Ukraine</p>
+          </div>
+          <div class="cell" style="margin-bottom:12px;">
+            <div class="cell-title">Hybrid warfare</div>
+            <p style="font-size:13px;">"Gray zone" operations targeting critical infrastructure in NATO states — cyber, disinformation, subversion as primary tools; Gerasimov Doctrine in live application</p>
+          </div>
+          <div class="cell">
+            <div class="cell-title">Arctic theater</div>
+            <p style="font-size:13px;">Transitioned from cooperation to confrontation; High North vital for nuclear second-strike capability and Northern Sea Route; Svalbard as active pressure point; disruption of fiber-optic cables, drone testing against Nordic infrastructure</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide" id="s13">
+    <div class="slide-number">12 — Strategic implications</div>
+    <h2 class="slide-title">What the West can do</h2>
+    <div class="content">
+      <div class="three-col">
+        <div class="policy-col">
+          <div class="policy-col-title">Decouple by issue</div>
+          <ul>
+            <li>Because Putin's beliefs vary significantly by topic, a blanket confrontational posture is counterproductive</li>
+            <li>He is most "businesslike" when he perceives economic and political stability</li>
+            <li>Pursue partnership on stable interests (counter-terrorism, Arctic governance, non-proliferation) while maintaining clear rivalry on friction points</li>
+            <li>The operational code analysis confirms decoupling is both viable and strategically sound</li>
+          </ul>
+        </div>
+        <div class="policy-col">
+          <div class="policy-col-title">Target his core fear</div>
+          <ul>
+            <li>Putin is most dangerous when he perceives "chaos looming" — design punishments and incentives that target his fundamental fear of state disintegration and loss of personal power</li>
+            <li>Since he is a tactician, behavior is dependent on his perception of immediate circumstances — requires real-time intelligence on his reading of the balance of power, not an assessment of a static grand plan</li>
+            <li>Credible NATO Article 5: firm nuclear umbrella explicitly covering Poland and the Baltic states; signal costs of "small wars" in advance, not after</li>
+            <li>Non-starter: Putin will not compromise on territorial gains (Crimea, Donbas) — signals weakness to his domestic patron-client networks</li>
+          </ul>
+        </div>
+        <div class="policy-col" style="border-color:#3a2e1e;">
+          <div class="policy-col-title" style="color:#c9a96e;">Break the fourth circle</div>
+          <p style="font-size:13px; color:#aaa; margin-bottom:12px;">The most potent available weapon against the regime. No military action required.</p>
+          <ul>
+            <li>Prohibit anonymous shell companies</li>
+            <li>End real estate exemptions in anti-money laundering laws</li>
+            <li>Subject all monetary flows to standard bank regulation</li>
+          </ul>
+          <p style="font-size:12px; color:#666; margin-top:12px;">The elite's wealth is housed in Western financial systems. The loopholes are a political choice, not a legal necessity.</p>
+          <hr class="section-rule" style="margin:14px 0;">
+          <p style="font-size:12px; color:#666;">Long-term: the disparity between Russia's stagnant economic power and its oversized military ambition is potentially explosive — Moscow will remain a "spoiler" for the foreseeable future, but the structural brittleness is real.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide" id="s14">
+    <div class="slide-number">13 — The completed education</div>
+    <h2 class="slide-title">Three conclusions</h2>
+    <div class="content">
+      <div class="conclusion-item">
+        <div class="conclusion-num">01</div>
+        <div class="conclusion-stmt">The West does not operate by the rules it claims to enforce.</div>
+        <div class="conclusion-body">Kosovo 1999 and Libya 2011 proved it. International law is a tool of the powerful, not a constraint on them. UN authorization was bypassed; Gaddafi was killed despite surrendering his weapons programme. The evidence was observable and documented.</div>
+      </div>
+      <div class="conclusion-item">
+        <div class="conclusion-num">02</div>
+        <div class="conclusion-stmt">Strength is the only language that commands respect.</div>
+        <div class="conclusion-body">The Dash to Pristina, the Crimea normalization, the World Cup VIP box — brute force produces outcomes; diplomatic protest produces nothing. At each decision point, the West chose normalization over consequence. Each forgiveness was read in Moscow as a license for the next escalation.</div>
+      </div>
+      <div class="conclusion-item">
+        <div class="conclusion-num">03</div>
+        <div class="conclusion-stmt">The only true sovereignty is the kind you can defend yourself.</div>
+        <div class="conclusion-body">Hence the arsenal, the reserves, the nuclear doctrine, the strategic autonomy — every policy decision since 1999 flows from this conclusion. Russia's gold hoarding, Rosrezerv, the Potato Principle scaled to national level: all of it is the same logic, applied at different magnitudes.</div>
+      </div>
+      <hr class="section-rule" style="margin:20px 0;">
+      <p style="font-size:13px; color:#666; font-style:italic;">These three conclusions are internally consistent. If you accept the premises — and they are not entirely wrong — the logic that follows is coherent. This is precisely what makes him dangerous.</p>
+    </div>
+  </div>
+
+  <div class="slide" id="s15">
+    <div class="slide-number">14 — The open question</div>
+    <div style="flex:1; display:flex; flex-direction:column; justify-content:center;">
+      <div class="pull-quote">
+        "Can a leader forged in survivalism and paralysis of power ever truly participate in a globalized order — or has his education taught him that the only way to survive is to be the one who decides when the rules no longer apply?"
+        <cite>For the Operative in the Kremlin, the answer appears to be the latter.</cite>
+      </div>
+      <hr class="section-rule" style="max-width:480px; margin:0 auto 24px;">
+      <p style="text-align:center; font-size:12px; color:#444; font-family:'Courier New',monospace; letter-spacing:0.08em; max-width:560px; margin:0 auto;">The deeper failure is not that we lacked the data. It is that we lacked the imagination to believe it. The next autocrat who promises stability while hiding a dagger will offer us the same choice.</p>
+    </div>
+  </div>
+
+  <div class="nav">
+    <button class="nav-btn" id="prevBtn" onclick="changeSlide(-1)" disabled>← prev</button>
+    <div style="display:flex; flex-direction:column; align-items:center; gap:8px;">
+      <div class="nav-dots" id="navDots"></div>
+      <span class="nav-progress" id="navProgress">1 / 15</span>
+    </div>
+    <button class="nav-btn" id="nextBtn" onclick="changeSlide(1)">next →</button>
+  </div>
+</div>
+
+<script>
+  const total = 15;
+  let cur = 1;
+
+  const dotsEl = document.getElementById('navDots');
+  for (let i = 1; i <= total; i++) {
+    const d = document.createElement('div');
+    d.className = 'nav-dot' + (i === 1 ? ' active' : '');
+    d.onclick = () => goTo(i);
+    dotsEl.appendChild(d);
+  }
+
+  function goTo(n) {
+    document.getElementById('s' + cur).classList.remove('active');
+    cur = n;
+    document.getElementById('s' + cur).classList.add('active');
+    document.getElementById('navProgress').textContent = cur + ' / ' + total;
+    document.getElementById('prevBtn').disabled = cur === 1;
+    document.getElementById('nextBtn').disabled = cur === total;
+    const dots = dotsEl.querySelectorAll('.nav-dot');
+    dots.forEach((d, i) => d.classList.toggle('active', i + 1 === cur));
+  }
+
+  function changeSlide(dir) {
+    const next = cur + dir;
+    if (next >= 1 && next <= total) goTo(next);
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') changeSlide(1);
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') changeSlide(-1);
+  });
+</script>
+</body>
+</html>
